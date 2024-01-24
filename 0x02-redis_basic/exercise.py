@@ -7,7 +7,7 @@ from typing import Union, Callable, Optional
 from functools import wraps
 
 
-def replay(method: Callable):
+def replay(func: Callable):
     """Replay decorator"""
     key = method.__qualname__
     r = redis.Redis()
