@@ -10,6 +10,7 @@ from functools import wraps
 def replay(method: Callable):
     """Replay decorator"""
     key = method.__qualname__
+    r = redis.Redis()
 
     inputs = r.lrange("{}:inputs".format(key), 0, -1)
     outputs = r.lrange("{}:outputs".format(key), 0, -1)
@@ -20,8 +21,8 @@ def replay(method: Callable):
     out = '{} was called {} {}:'.format(key, calls, times)
     print(out)
     for i, o in zip(inputs, outputs):
-        print('{}(*{}) -> {}'.format(key, i.decode('utf-8'),
-                                     o.decode('utf-8')))
+        out = '{}(*{}) -> {}'.format(key, i.decode('utf-8'), o.decode('utf-8'))
+        print(out)
 
 
 def call_history(method: Callable) -> Callable:
