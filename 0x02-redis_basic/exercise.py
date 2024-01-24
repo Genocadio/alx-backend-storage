@@ -7,6 +7,32 @@ from typing import Union, Callable
 from functools import wraps
 
 
+def replay(method: Callable):
+    """Replay decorator"""
+    key = method.__qualname__
+
+    inputs = method.__self__.get_str("{}:inputs".format(key))
+    outputs = method.__self__.get_str("{}:outputs".format(key))
+    calls = method.__self__.get_str(key)
+
+    print("{} was called {} times:".format(key, calls))
+
+    for i, o in zip(inputs, outputs):
+        print("{}(*{}) -> {}".format(key, i, o))
+        method(self, *i, **o)
+        print()
+        calls = method.__self__.get_str(key)
+        print("{} was called {} times:".format(key, calls))
+        print()
+
+        if i != o:
+            raise ValueError("Input and output are not the same")
+        else:
+            pass
+
+    return method
+
+
 def call_history(method: Callable) -> Callable:
     """Decorator to store the history of inputs and outputs"""
     key = method.__qualname__
