@@ -7,27 +7,6 @@ from typing import Union, Callable, Optional
 from functools import wraps
 
 
-def replay(func: Callable):
-    """
-    Prototype: def replay(func: Callable):
-    Displays history of calls of a particular function
-    """
-    r = redis.Redis()
-    key_m = func.__qualname__
-    inp_m = r.lrange("{}:inputs".format(key_m), 0, -1)
-    outp_m = r.lrange("{}:outputs".format(key_m), 0, -1)
-    calls_number = len(inp_m)
-    times_str = 'times'
-    if calls_number == 1:
-        times_str = 'time'
-    fin = '{} was called {} {}:'.format(key_m, calls_number, times_str)
-    print(fin)
-    for k, v in zip(inp_m, outp_m):
-        fin = '{}(*{}) -> {}'.format(
-            key_m, k.decode('utf-8'), v.decode('utf-8'))
-        print(fin)
-
-
 def call_history(method: Callable) -> Callable:
     """Decorator to store the history of inputs and outputs"""
     key = method.__qualname__
@@ -52,6 +31,25 @@ def count_calls(method: Callable) -> Callable:
         self._redis.incr(key)
         return method(self, *args, **kwargs)
     return wrapper
+
+
+def replay(func: Callable):
+    """Replay decorator"""
+    key = func.__qualname__
+    r = redis.Redis()
+
+    inputs = r.lrange("{}:inputs".format(key), 0, -1)
+    outputs = r.lrange("{}:outputs".format(key), 0, -1)
+    calls = len(inputs)
+    times = 'times'
+    if calls == 1:
+        times = 'time'
+    out = '{} was called {} {}:'.format(key, calls, times)
+    print(out)
+    for i, o in zip(inputs, outputs):
+        out = '{}(*{}) -> {}'.format(key, i.decode('utf-8'),
+                                     o.decode('utf-8'))
+        print(out)
 
 
 class Cache:
