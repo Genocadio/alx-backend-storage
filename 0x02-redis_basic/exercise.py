@@ -8,12 +8,12 @@ from typing import Union
 
 def count_calls(method: callable) -> callable:
     """Decorator count calls"""
+    key = method.__qualname__
 
     @wraps(method)
     def wrapper(self, *args, **kwargs):
         """Wrapper function"""
-        key_m = method.__qualname__
-        self._redis.incr(key_m)
+        self._redis.incr(key)
         return method(self, *args, **kwargs)
     return wrapper
 
