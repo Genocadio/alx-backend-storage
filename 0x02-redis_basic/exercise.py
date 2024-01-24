@@ -3,7 +3,7 @@
 
 import redis
 import uuid
-from typing import Union, Callable
+from typing import Union, Callable, Optional
 from functools import wraps
 
 
@@ -21,7 +21,8 @@ def replay(method: Callable):
     out = '{} was called {} {}:'.format(key, calls, times)
     print(out)
     for i, o in zip(inputs, outputs):
-        out = '{}(*{}) -> {}'.format(key, i.decode('utf-8'), o.decode('utf-8'))
+        out = '{}(*{}) -> {}'.format(key, i.decode('utf-8'),
+                                     o.decode('utf-8'))
         print(out)
 
 
@@ -66,8 +67,10 @@ class Cache:
         self._redis.set(key, data)
         return key
 
-    def get(self, key: str, fn: callable = None) -> Union[str,
-                                                          bytes, int, float]:
+    def get(self,
+            key: str, fn: Optional[callable] = None) -> Union[str,
+                                                              bytes,
+                                                              int, float]:
         """Get method"""
         if fn:
             return fn(self._redis.get(key))
