@@ -6,6 +6,18 @@ import uuid
 from typing import Union
 
 
+def count_calls(method: callable) -> callable:
+    """Decorator count calls"""
+
+    @wraps(method)
+    def wrapper(self, *args, **kwargs):
+        """Wrapper function"""
+        key_m = method.__qualname__
+        self._redis.incr(key_m)
+        return method(self, *args, **kwargs)
+    return wrapper
+
+
 class Cache:
     """Cache class"""
     def __init__(self):
@@ -13,6 +25,7 @@ class Cache:
         self._redis = redis.Redis()
         self._redis.flushdb()
 
+    @count_calls
     def store(self, data: Union[str, bytes, int, float]) -> str:
         """Store method"""
         key = str(uuid.uuid4())
