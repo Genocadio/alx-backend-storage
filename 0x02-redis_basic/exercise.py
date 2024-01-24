@@ -7,6 +7,20 @@ from typing import Union, Callable
 from functools import wraps
 
 
+def call_history(method: Callable) -> Callable:
+    """Decorator to store the history of inputs and outputs"""
+    key = method.__qualname__
+
+    @wraps(method)
+    def wrapper(self, *args, **kwargs):
+        """Wrapper function"""
+        self._redis.rpush("{}:inputs".format(key), str(args))
+        result = method(self, *args, **kwargs)
+        self._redis.rpush("{}:outputs".format(key), result)
+        return result
+    return wrapper
+
+
 def count_calls(method: Callable) -> Callable:
     """Decorator count calls"""
     key = method.__qualname__
@@ -27,6 +41,7 @@ class Cache:
         self._redis.flushdb()
 
     @count_calls
+    @call_history
     def store(self, data: Union[str, bytes, int, float]) -> str:
         """Store method"""
         key = str(uuid.uuid4())
