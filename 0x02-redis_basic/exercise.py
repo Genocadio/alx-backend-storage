@@ -9,7 +9,7 @@ from functools import wraps
 
 def replay(func: Callable):
     """Replay decorator"""
-    key = method.__qualname__
+    key = func.__qualname__
     r = redis.Redis()
 
     inputs = r.lrange("{}:inputs".format(key), 0, -1)
